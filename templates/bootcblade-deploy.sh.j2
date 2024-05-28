@@ -5,5 +5,5 @@ podman run --rm --privileged \
         --volume /var/lib/containers:/var/lib/containers \
         --volume /:/target \
         --entrypoint bootc \
-        quay.io/centos-bootc/centos-bootc:{{ centos_bootc_tag if centos_bootc_tag is defined else 'stream9' }} \
+        localhost/bootcblade:latest \
         install to-filesystem --skip-fetch-check --replace=alongside /target --root-ssh-authorized-keys /target/root/.ssh/authorized_keys {{ '' if bootc_acknowledge is false else '--acknowledge-destructive' }}

@@ -5,12 +5,20 @@
     ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
 
   tasks:
-    - name: Block for deploy-base-bootc
+    - name: Block for deploy
       block:
-        - name: Create /root/centos-bootc-deploy.sh
+        - name: Make sure podman is installed
+          ansible.builtin.package:
+            name: "podman"
+            state: present
+
+        - name: Create /root/bootcblade.containerfile and /root/bootcblade-deploy.sh
           ansible.builtin.template:
-            src: "centos-bootc-deploy.sh.j2"
-            dest: "/root/centos-bootc-deploy.sh"
+            src: "{{ item }}.j2"
+            dest: "/root/{{ item }}"
+          loop:
+            - bootcblade.containerfile
+            - bootcblade-deploy.sh
 
         - name: Create root ssh authorized keys
           ansible.posix.authorized_key:
@@ -18,39 +26,23 @@
             key: "{{ create_user_ssh_pub }}"
             state: present
 
-        - name: Run bootc deployment for basic centos-bootc environment
-          ansible.builtin.shell: "bash /root/centos-bootc-deploy.sh"
-
-        - name: Reboot into basic centos-bootc environment
-          ansible.builtin.reboot:
-            reboot_timeout: 1
-          ignore_errors: true
-      tags: deploy-base-bootc
-
-    - name: Block for deploy-bootcblade
-      block:
-        - name: Wait for connectivity to basic centos-bootc environment
-          ansible.builtin.wait_for_connection:
-
-        - name: Create /root/BootcBlade.containerfile
-          ansible.builtin.template:
-            src: "bootcblade.containerfile.j2"
-            dest: "/root/bootcblade.containerfile"
-
         - name: Build BootcBlade container image
           ansible.builtin.shell: "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile"
 
-        - name: Run bootc-switch into BootcBlade image
-          ansible.builtin.shell: "bootc switch --transport containers-storage localhost/bootcblade:latest"
+        - name: Deploy BootcBlade image
+          ansible.builtin.shell: "bash /root/bootcblade-deploy.sh"
 
         - name: Reboot into BootcBlade environment
           ansible.builtin.reboot:
-      vars:
-        ansible_user: "root"
-      tags: deploy-bootcblade
+            reboot_timeout: 1
+          ignore_errors: true
+      tags: deploy
 
-    - name: Block for configure-bootcblade
+    - name: Block for configure
       block:
+        - name: Wait for connectivity after deployment
+          ansible.builtin.wait_for_connection:
+
         - name: Create user
           ansible.builtin.user:
             name: "{{ create_user }}"
@@ -105,5 +97,5 @@
             - "bootc-fetch-apply-updates.service"
       vars:
         ansible_user: "root"
-      tags: configure-bootcblade
+      tags: configure
 

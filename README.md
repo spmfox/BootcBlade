@@ -35,8 +35,8 @@ This Ansible automation uses bootc to create "the perfect" KVM hypervisor with Z
 ## How It Works
 ### Deploy
 1. A new or existing system must exist. This system should be as small as possible because its filesystem will persist in the resulting deployed machine
-2. A "base" centos-bootc is used for the first deploy - the user SSH key is set for the root user now
-3. Once the base is deployed, we use that to build and ```bootc switch``` into the final BootcBlade image
+2. ```bootcblade.containerfile``` is copied to the existing system, then ```podman build``` is used to build the image
+3. Once the image is built, the BootcBlade image is deployed to the system - then it is rebooted
 4. Ansible creates the user with (or without) the password and adds the SSH key
 
 ### ISO
