@@ -1,0 +1,5 @@
+[[customizations.user]]
+name = "{{ create_user }}"
+{{ 'password = "' if create_user_password is defined else ''}}{{ create_user_password if create_user_password is defined else '' }}{{ '"' if create_user_password is defined else '' }}
+key = "{{ create_user_ssh_pub }}"
+groups = ["wheel"]

@@ -1,0 +1,9 @@
+#!/bin/bash
+podman run --rm --privileged \
+        --pid=host --security-opt label=type:unconfined_t \
+        --volume /dev:/dev \
+        --volume /var/lib/containers:/var/lib/containers \
+        --volume /:/target \
+        --entrypoint bootc \
+        quay.io/centos-bootc/centos-bootc:{{ centos_bootc_tag if centos_bootc_tag is defined else 'stream9' }} \
+        install to-filesystem --skip-fetch-check --replace=alongside /target --root-ssh-authorized-keys /target/root/.ssh/authorized_keys {{ '' if bootc_acknowledge is false else '--acknowledge-destructive' }}

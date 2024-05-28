@@ -1,0 +1,15 @@
+- hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Create /root/BootcBlade.containerfile
+      ansible.builtin.template:
+        src: "bootcblade.containerfile.j2"
+        dest: "/root/bootcblade.containerfile"
+
+    - name: Build BootcBlade container image
+      ansible.builtin.shell: "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile"
+
+    - name: Run bootc-update to apply newly built image
+      ansible.builtin.shell: "bootc update"

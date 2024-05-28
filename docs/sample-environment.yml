@@ -1,0 +1,25 @@
+# See README.md to determine which variables are needed for which activity.
+
+all:
+  hosts:
+    remote-machine:
+      create_user_ssh_pub: "ssh-rsa <ssh key>"
+# This is the bare minimum required - no users will be created, this key will be used for root only.
+
+    remote-machine2:
+      ansible_user: "root"
+      create_user: "spmfox"
+      create_user_password: "password"
+      create_user_shell: "/usr/bin/fish"
+      create_user_ssh_pub: "ssh-rsa <ssh key>"
+# This will create a user with a custom shell defined, and use the same SSH key for the user and root. User will also have a password.
+# Root account is used for the initial connection during deployment on an existing machine.
+
+    localhost:
+      ansible_connection: local
+      create_user: "spmfox"
+      create_user_ssh_pub: "ssh-rsa <ssh key>"
+      centos_bootc_tag: "stream9-1714747911"
+      bootc_acknowledge: false
+# This is a local run only, useful for creating ISOs and perhaps running update.yml. The centos-bootc:tag can be specified here, using an earlier version.
+# Because this version is before the need for an acknowledgement during bootc deployment, we can override and remove that from the command.

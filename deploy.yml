@@ -1,0 +1,109 @@
+- hosts: all
+  become: true
+  gather_facts: false
+  vars:
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null"
+
+  tasks:
+    - name: Block for deploy-base-bootc
+      block:
+        - name: Create /root/centos-bootc-deploy.sh
+          ansible.builtin.template:
+            src: "centos-bootc-deploy.sh.j2"
+            dest: "/root/centos-bootc-deploy.sh"
+
+        - name: Create root ssh authorized keys
+          ansible.posix.authorized_key:
+            user: "root"
+            key: "{{ create_user_ssh_pub }}"
+            state: present
+
+        - name: Run bootc deployment for basic centos-bootc environment
+          ansible.builtin.shell: "bash /root/centos-bootc-deploy.sh"
+
+        - name: Reboot into basic centos-bootc environment
+          ansible.builtin.reboot:
+            reboot_timeout: 1
+          ignore_errors: true
+      tags: deploy-base-bootc
+
+    - name: Block for deploy-bootcblade
+      block:
+        - name: Wait for connectivity to basic centos-bootc environment
+          ansible.builtin.wait_for_connection:
+
+        - name: Create /root/BootcBlade.containerfile
+          ansible.builtin.template:
+            src: "bootcblade.containerfile.j2"
+            dest: "/root/bootcblade.containerfile"
+
+        - name: Build BootcBlade container image
+          ansible.builtin.shell: "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile"
+
+        - name: Run bootc-switch into BootcBlade image
+          ansible.builtin.shell: "bootc switch --transport containers-storage localhost/bootcblade:latest"
+
+        - name: Reboot into BootcBlade environment
+          ansible.builtin.reboot:
+      vars:
+        ansible_user: "root"
+      tags: deploy-bootcblade
+
+    - name: Block for configure-bootcblade
+      block:
+        - name: Create user
+          ansible.builtin.user:
+            name: "{{ create_user }}"
+            groups: "wheel"
+            append: true
+            shell: "{{ create_user_shell if create_user_shell is defined else '/bin/bash' }}"
+          when: create_user is defined and create_user_password is not defined
+
+        - name: Create user (with password)
+          ansible.builtin.user:
+            name: "{{ create_user }}"
+            groups: "wheel"
+            append: true
+            shell: "{{ create_user_shell if create_user_shell is defined else '/bin/bash' }}"
+            password: "{{ create_user_password | password_hash('sha512') }}"
+          when: create_user is defined and create_user_password is defined
+
+        - name: Create user ssh authorized keys
+          ansible.posix.authorized_key:
+            user: "{{ create_user }}"
+            key: "{{ create_user_ssh_pub }}"
+            state: present
+          when: (create_user is defined) and (create_user_ssh_pub is defined)
+
+        - name: Add bootcblade-rebuild.service and .timer files for automatic update
+          ansible.builtin.template:
+            src: "{{ item }}.j2"
+            dest: "/etc/systemd/system/{{ item }}"
+          loop:
+            - "bootcblade-rebuild.service"
+            - "bootcblade-rebuild.timer"
+
+        - name: Enable and start bootcblade-rebuild services
+          ansible.builtin.systemd_service:
+            name: "{{ item.name }}"
+            state: "{{ item.state }}"
+            enabled: "{{ item.enabled }}"
+            daemon-reload: true
+          loop:
+            - { name: "bootcblade-rebuild.service", state: "stopped", enabled: false }
+            - { name: "bootcblade-rebuild.timer", state: "started", enabled: true }
+
+        - name: Stop and disable (mask) bootc-fetch-apply-updates
+          ansible.builtin.systemd_service:
+            name: "{{ item }}"
+            state: "stopped"
+            enabled: false
+            masked: true
+            daemon-reload: true
+          loop:
+            - "bootc-fetch-apply-updates.timer"
+            - "bootc-fetch-apply-updates.service"
+      vars:
+        ansible_user: "root"
+      tags: configure-bootcblade
+

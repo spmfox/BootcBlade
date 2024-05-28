@@ -1,0 +1,24 @@
+FROM quay.io/centos-bootc/centos-bootc:{{ centos_bootc_tag if centos_bootc_tag is defined else 'stream9' }}
+RUN mkdir /var/roothome
+RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-passwordless-sudo
+RUN dnf -y install epel-release && \
+    dnf -y install https://zfsonlinux.org/epel/zfs-release-2-3$(rpm --eval "%{dist}").noarch.rpm && \
+    dnf -y install kernel-devel-$(ls /usr/lib/modules) && \
+    dnf -y install zfs && \
+    dkms build zfs/$(rpm -q --qf '%{VERSION}' zfs) -k $(ls /usr/lib/modules) && \
+    dkms install zfs/$(rpm -q --qf '%{VERSION}' zfs) -k $(ls /usr/lib/modules)
+RUN dnf -y install vim git podman fish ansible wget && \
+    echo "qemu:x:107:107:qemu user:/:/sbin/nologin" >> /etc/passwd && \
+    dnf -y install qemu-kvm libvirt virt-install virt-viewer && \
+    dnf -y install cockpit cockpit-bridge cockpit-file-sharing cockpit-machines cockpit-pcp cockpit-podman cockpit-storaged cockpit-system
+RUN git clone https://github.com/45drives/cockpit-zfs-manager.git /root/cockpit-zfs-manager && \
+    cp -r /root/cockpit-zfs-manager/zfs /usr/share/cockpit && \
+    rm -r /root/cockpit-zfs-manager
+RUN git clone https://github.com/jimsalterjrs/sanoid.git /root/sanoid && \
+    cd /root/sanoid && git checkout $(git tag | grep "^v" | tail -n 1) && cp sanoid syncoid findoid sleepymutex /usr/local/sbin && \
+    mkdir /etc/sanoid && cp sanoid.defaults.conf /etc/sanoid && touch /etc/sanoid/sanoid.conf && cp sanoid.conf /etc/sanoid/sanoid.example.conf && \
+    rm -r /root/sanoid
+RUN dnf -y install perl-Data-Dumper perl-Getopt-Long lzop mbuffer mhash pv && \
+    PERL_MM_USE_DEFAULT=1 cpan install Capture::Tiny && PERL_MM_USE_DEFAULT=1 cpan install Config::IniFiles
+RUN dnf -y install firewalld && \
+    systemctl enable firewalld

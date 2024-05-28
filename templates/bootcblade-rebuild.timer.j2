@@ -1,0 +1,10 @@
+[Unit]
+Description=bootcblade-rebuild timer
+
+[Timer]
+OnBootSec=60min
+OnUnitActiveSec=1w
+
+
+[Install]
+WantedBy=timers.target

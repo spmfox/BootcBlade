@@ -1,0 +1,42 @@
+- hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Create /root/bootcblade-output folder
+      ansible.builtin.file:
+        path: "/root/bootcblade-output"
+        state: directory
+      tags: setup
+
+    - name: Create files
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+      loop:
+        - { src: "bootcblade.config.toml.j2", dest: "/root/bootcblade.config.toml" }
+        - { src: "bootcblade.containerfile.j2", dest: "/root/bootcblade.containerfile" }
+        - { src: "bootcblade-iso.sh.j2", dest: "/root/bootcblade-iso.sh" }
+      tags: setup
+
+    - name: Build BootcBlade container image
+      ansible.builtin.shell: "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile"
+      tags: build-container
+
+    - name: Create BootcBlade ISO
+      ansible.builtin.shell: "bash /root/bootcblade-iso.sh"
+      tags: build-iso
+
+    - name: Cleanup files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - "/root/bootcblade.config.toml"
+        - "/root/bootcblade.containerfile"
+        - "/root/bootcblade-iso.sh"
+      tags: cleanup
+
+    - name: Cleanup images
+      ansible.builtin.shell: "podman image rm localhost/bootcblade ; podman image rm quay.io/centos-bootc/bootc-image-builder ; podman image rm quay.io/centos-bootc/centos-bootc:{{ centos_bootc_tag if centos_bootc_tag is defined else 'stream9' }} ; podman image prune -f"
+      tags: cleanup
