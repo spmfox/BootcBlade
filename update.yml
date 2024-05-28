@@ -9,7 +9,7 @@
         dest: "/root/bootcblade.containerfile"
 
     - name: Build BootcBlade container image
-      ansible.builtin.shell: "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile"
+      ansible.builtin.shell: "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile --no-cache --pull=always"
 
     - name: Run bootc-update to apply newly built image
       ansible.builtin.shell: "bootc update"
