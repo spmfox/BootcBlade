@@ -2,5 +2,6 @@
 Description=BootcBlade rebuild service
 
 [Service]
-ExecStart=/usr/bin/podman build -t localhost/bootcblade -f /root/bootcblade.containerfile --no-cache --pull=always
+Type=oneshot
+ExecStart=/usr/bin/bash -c "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile --no-cache --pull=always"
 ExecStartPost=/usr/bin/bash -c "/usr/bin/sleep 10 ; /usr/bin/bootc update && /usr/bin/podman image prune -f"

@@ -43,13 +43,6 @@
         - name: Wait for connectivity after deployment
           ansible.builtin.wait_for_connection:
 
-        - name: Create /root/bootcblade.containerfile
-          ansible.builtin.template:
-            src: "bootcblade.containerfile.j2"
-            dest: "/root/bootcblade.containerfile"
-          loop:
-            - bootcblade.containerfile
-
         - name: Create user
           ansible.builtin.user:
             name: "{{ create_user }}"
@@ -74,11 +67,12 @@
             state: present
           when: (create_user is defined) and (create_user_ssh_pub is defined)
 
-        - name: Build BootcBlade container image
-          ansible.builtin.shell: "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile"
-
-        - name: Invoke bootc-switch to switch from registry to local container storage
-          ansible.builtin.shell: "bootc switch --transport containers-storage localhost/bootcblade:latest"
+        - name: Create /root/bootcblade.containerfile
+          ansible.builtin.template:
+            src: "bootcblade.containerfile.j2"
+            dest: "/root/bootcblade.containerfile"
+          loop:
+            - bootcblade.containerfile
 
         - name: Add bootcblade-rebuild.service and .timer files for automatic update
           ansible.builtin.template:
@@ -108,9 +102,6 @@
           loop:
             - "bootc-fetch-apply-updates.timer"
             - "bootc-fetch-apply-updates.service"
-
-        - name: Reboot into final BootcBlade environment
-          ansible.builtin.reboot:
       vars:
         ansible_user: "root"
       tags: configure
