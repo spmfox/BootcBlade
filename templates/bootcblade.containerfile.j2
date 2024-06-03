@@ -4,7 +4,7 @@ FROM quay.io/centos-bootc/centos-bootc:{{ centos_bootc_tag if centos_bootc_tag i
 RUN mkdir /var/roothome
 
 # ZFS
-RUN dnf -y install epel-release && \
+RUN dnf -y install epel-release git && \
     dnf -y install https://zfsonlinux.org/epel/zfs-release-2-3$(rpm --eval "%{dist}").noarch.rpm && \
     dnf -y install kernel-devel-$(ls /usr/lib/modules) && \
     dnf -y install zfs && \
@@ -37,4 +37,4 @@ RUN dnf -y install firewalld && \
 RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-passwordless-sudo
 
 # Other tools
-RUN dnf -y install vim git podman fish ansible wget dstat byobu smartmontools
+RUN dnf -y install vim podman fish ansible wget dstat byobu smartmontools
