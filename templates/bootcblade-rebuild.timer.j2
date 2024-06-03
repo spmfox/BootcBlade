@@ -2,9 +2,8 @@
 Description=bootcblade-rebuild timer
 
 [Timer]
-OnBootSec=60min
-OnUnitActiveSec=1w
-
+OnCalendar=weekly
+Persistent=true
 
 [Install]
 WantedBy=timers.target
