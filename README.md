@@ -1,13 +1,13 @@
 # BootcBlade
 
-Ansible automation for deploying a KVM hypervisor using bootc on CentOS Stream.
+Ansible automation for deploying a KVM hypervisor using bootc and Fedora Server.
 
 ![BootcBlade](docs/images/logo.png)
 
 This Ansible automation uses bootc to create "the perfect" KVM hypervisor with ZFS, NFS + Samba, Cockpit, and Sanoid + Syncoid.
 
 ## Usage - deploy on top of existing system
-1. Install a fresh CentOS Stream 9 to the desired host - use a minimal install to save disk space on the resulting deployed machine
+1. Install a fresh Fedora Server or CentOS Stream to the desired host - use the latest minimal install to save disk space on the resulting deployed machine
 2. Install ```podman``` on the host
 3. Generate an SSH key
 4. Create inventory using the example in the ```docs``` folder
@@ -59,9 +59,9 @@ will need to be run, either remotely or as localhost, and the required variables
 You can use ```update.yml``` to recreate this, assuming you have the correct inventory.
 
 ### BootcBlade will no longer build
-It is possible that the upstream ```centos-bootc``` project will change something (the kernel perhaps) that makes ZFS building no longer possible. You can go to [https://quay.io/repository/centos-bootc/centos-bootc?tab=tags](https://quay.io/repository/centos-bootc/centos-bootc?tab=tags) and try specifing an older tag using ```centos_bootc_tag```.
+By default the ```latest``` tag is used for ```fedora-bootc``` - its possible that there was a kernel update, or a release update, that breaks ZFS. Usually these issues are transient and resolve on their own. If you need a build now (perhaps for a fresh system) you can try and see if there is an older release (tag) from the upstream repo, and adjust it using the ```bootc_image_tag``` variable.
 
-Another possibility is to just wait, ususally these repo related problems work themselves out and the image will build again within a week.
+[https://quay.io/repository/fedora/fedora-bootc?tab=tags](https://quay.io/repository/fedora/fedora-bootc?tab=tags)
 
 ## Variable Usage
 This is a description of each variable, what it does, and a table to determine when it is needed.
@@ -70,7 +70,7 @@ This is a description of each variable, what it does, and a table to determine w
 - ```create_user_password```: This password will be used for the created user
 - ```create_user_ssh_pub```: This is a SSH pubkey that will be added to the created user during ```deploy.yml``` and ```iso.yml```, also it is applied to the root user in ```deploy.yml```
 - ```create_user_shell```: This shell setting will be used for the created user only during ```deploy.yml```
-- ```centos_bootc_tag```: Override the tag for centos-bootc source image for ```deploy.yml```, ```iso.yml```, and ```update.yml```
+- ```bootc_image_tag```: Override the source image tag for ```deploy.yml```, ```iso.yml```, and ```update.yml```
 - ```bootc_acknowledge```: This setting is only effective when setting it to ```false```, newer versions of ```bootc``` require an acknowledgment during ```deploy.yml``` but older versions break
 if this is defined - so this can override the default and remove that
 - ```ansible_user``` - This is an Ansible variable, useful for connecting to the initial machine with a different user during ```deploy.yml```
@@ -83,7 +83,7 @@ if this is defined - so this can override the default and remove that
 | create_user_password | X | - |
 | create_user_ssh_pub  | X | X |
 | create_user_shell    | X | - |
-| centos_bootc_tag     | X | - |
+| bootc_image_tag     | X | - |
 | bootc_acknowledge    | X | - |
 
 ### iso.yml
@@ -93,7 +93,7 @@ if this is defined - so this can override the default and remove that
 | create_user_password | X | - |
 | create_user_ssh_pub  | X | X |
 | create_user_shell    | - | - |
-| centos_bootc_tag     | X | - |
+| bootc_image_tag     | X | - |
 | bootc_acknowledge    | - | - |
 
 ### update.yml
@@ -103,6 +103,6 @@ if this is defined - so this can override the default and remove that
 | create_user_password | - | - |
 | create_user_ssh_pub  | - | - |
 | create_user_shell    | - | - |
-| centos_bootc_tag     | X | - |
+| bootc_image_tag     | X | - |
 | bootc_acknowledge    | - | - |
 

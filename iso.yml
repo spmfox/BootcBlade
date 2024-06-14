@@ -38,5 +38,5 @@
       tags: cleanup
 
     - name: Cleanup images
-      ansible.builtin.shell: "podman image rm localhost/bootcblade ; podman image rm quay.io/centos-bootc/bootc-image-builder ; podman image rm quay.io/centos-bootc/centos-bootc:{{ centos_bootc_tag if centos_bootc_tag is defined else 'stream9' }} ; podman image prune -f"
+      ansible.builtin.shell: "podman image rm localhost/bootcblade ; podman image rm quay.io/centos-bootc/bootc-image-builder ; podman image rm quay.io/fedora/fedora-bootc:{{ bootc_image_tag if bootc_image_tag is defined else 'latest' }} ; podman image prune -f"
       tags: cleanup

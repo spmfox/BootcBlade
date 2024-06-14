@@ -1,11 +1,11 @@
-FROM quay.io/centos-bootc/centos-bootc:{{ centos_bootc_tag if centos_bootc_tag is defined else 'stream9' }}
+FROM quay.io/fedora/fedora-bootc:{{ bootc_image_tag if bootc_image_tag is defined else 'latest' }}
 
 # Create root homedir
 RUN mkdir /var/roothome
 
 # ZFS
-RUN dnf -y install epel-release git && \
-    dnf -y install https://zfsonlinux.org/epel/zfs-release-2-3$(rpm --eval "%{dist}").noarch.rpm && \
+RUN dnf -y install git && \
+    dnf -y install https://zfsonlinux.org/fedora/zfs-release-2-5$(rpm --eval "%{dist}").noarch.rpm && \
     dnf -y install kernel-devel-$(ls /usr/lib/modules) && \
     dnf -y install zfs && \
     dkms build zfs/$(rpm -q --qf '%{VERSION}' zfs) -k $(ls /usr/lib/modules) && \
@@ -14,12 +14,17 @@ RUN dnf -y install epel-release git && \
 # KVM & Cockpit
 RUN echo "qemu:x:107:107:qemu user:/:/sbin/nologin" >> /etc/passwd && \
     dnf -y install qemu-kvm libvirt virt-install virt-viewer && \
-    dnf -y install cockpit cockpit-bridge cockpit-file-sharing cockpit-machines cockpit-pcp cockpit-podman cockpit-storaged cockpit-system
+    dnf -y install cockpit cockpit-bridge cockpit-machines cockpit-pcp cockpit-podman cockpit-storaged cockpit-system cockpit-navigator cockpit-selinux && \
+    systemctl enable cockpit.socket
 
 # Cockpit ZFS Manager
 RUN git clone https://github.com/45drives/cockpit-zfs-manager.git /root/cockpit-zfs-manager && \
     cp -r /root/cockpit-zfs-manager/zfs /usr/share/cockpit && \
     rm -r /root/cockpit-zfs-manager
+
+# Cockpit file sharing, and Samba users
+RUN dnf -y install https://github.com/45Drives/cockpit-identities/releases/download/v0.1.12/cockpit-identities-0.1.12-1.el8.noarch.rpm \
+    https://github.com/45Drives/cockpit-file-sharing/releases/download/v3.3.7/cockpit-file-sharing-3.3.7-1.el8.noarch.rpm
 
 # Sanoid & Syncoid
 RUN git clone https://github.com/jimsalterjrs/sanoid.git /root/sanoid && \
@@ -31,7 +36,8 @@ RUN dnf -y install perl-Data-Dumper perl-Getopt-Long lzop mbuffer mhash pv && \
 
 # Firewall
 RUN dnf -y install firewalld && \
-    systemctl enable firewalld
+    systemctl enable firewalld && \
+    firewall-offline-cmd --add-service cockpit
 
 # Allow sudo without password
 RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-passwordless-sudo
