@@ -45,7 +45,8 @@ RUN dnf -y install perl-Data-Dumper perl-Getopt-Long lzop mbuffer mhash pv && \
 # Firewall
 RUN dnf -y install firewalld && \
     systemctl enable firewalld && \
-    firewall-offline-cmd --add-service cockpit
+    firewall-offline-cmd --add-service cockpit && \
+    firewall-offline-cmd --add-service ssh
 
 # Allow sudo without password
 RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-passwordless-sudo
