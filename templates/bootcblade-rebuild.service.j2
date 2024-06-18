@@ -4,5 +4,6 @@ Description=BootcBlade rebuild service
 [Service]
 Type=oneshot
 TimeoutStartSec=30m
-ExecStart=/usr/bin/bash -c "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile --pull=always && sleep 10 && podman image prune -f"
+ExecStart=/usr/bin/bash -c "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile --pull=always"
 ExecStartPost=/usr/bin/bootc update
+ExecStartPost=-sleep 10 ; podman image prune -f
