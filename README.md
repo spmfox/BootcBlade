@@ -1,13 +1,13 @@
 # BootcBlade
 
-Ansible automation for deploying a KVM hypervisor using bootc and Fedora Server.
+Ansible automation for deploying a KVM hypervisor using bootc and CentOS Stream.
 
 ![BootcBlade](docs/images/logo.png)
 
 This Ansible automation uses bootc to create "the perfect" KVM hypervisor with ZFS, NFS + Samba, Cockpit, and Sanoid + Syncoid.
 
 ## Usage - deploy on top of existing system
-1. Install a fresh Fedora Server or CentOS Stream to the desired host - use the latest minimal install to save disk space on the resulting deployed machine
+1. Install a fresh CentOS Stream to the desired host - use the latest minimal install to save disk space on the resulting deployed machine
 2. Install ```podman``` on the host
 3. Generate an SSH key
 4. Create inventory using the example in the ```docs``` folder
@@ -58,10 +58,19 @@ will need to be run, either remotely or as localhost, and the required variables
 ### ```/root/bootcblade.containerfile``` is gone:
 You can use ```update.yml``` to recreate this, assuming you have the correct inventory.
 
-### BootcBlade will no longer build
-By default the ```latest``` tag is used for ```fedora-bootc``` - its possible that there was a kernel update, or a release update, that breaks ZFS. Usually these issues are transient and resolve on their own. If you need a build now (perhaps for a fresh system) you can try and see if there is an older release (tag) from the upstream repo, and adjust it using the ```bootc_image_tag``` variable.
+### Cockpit wont work
+Currently there is a known issue, ```cockpit-ws``` is having issues installing properly inside the container during the build. On a reboot, you will have to do the following commands as sudo:
+```$ bootc usr-overlay ; dnf -y reinstall cockpit-ws ; systemctl restart cockpit.socket```
 
+### BootcBlade will no longer build
+The default tag used for ```centos-bootc``` is referenced in ```templates/bootcblade.containerfile.j2``` - its possible that there was a kernel update, or a release update, that breaks ZFS. Usually these issues are transient and resolve on their own. If you need a build now (perhaps for a fresh system) you can try and see if there is an older release (tag) from the upstream repo, and adjust it using the ```bootc_image_tag``` variable.
+
+[https://quay.io/repository/centos-bootc/centos-bootc?tab=tags&tag=latest](https://quay.io/repository/centos-bootc/centos-bootc?tab=tags&tag=latest)
 [https://quay.io/repository/fedora/fedora-bootc?tab=tags](https://quay.io/repository/fedora/fedora-bootc?tab=tags)
+
+## Tweaking
+### Fedora
+You can use the branch ```fedora``` to deploy or build Fedora Server.
 
 ## Variable Usage
 This is a description of each variable, what it does, and a table to determine when it is needed.
