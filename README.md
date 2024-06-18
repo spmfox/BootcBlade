@@ -66,11 +66,6 @@ Currently there is a known issue, ```cockpit-ws``` is having issues installing p
 The default tag used for ```centos-bootc``` is referenced in ```templates/bootcblade.containerfile.j2``` - its possible that there was a kernel update, or a release update, that breaks ZFS. Usually these issues are transient and resolve on their own. If you need a build now (perhaps for a fresh system) you can try and see if there is an older release (tag) from the upstream repo, and adjust it using the ```bootc_image_tag``` variable.
 
 [https://quay.io/repository/centos-bootc/centos-bootc?tab=tags&tag=latest](https://quay.io/repository/centos-bootc/centos-bootc?tab=tags&tag=latest)
-[https://quay.io/repository/fedora/fedora-bootc?tab=tags](https://quay.io/repository/fedora/fedora-bootc?tab=tags)
-
-## Tweaking
-### Fedora
-You can use the branch ```fedora``` to deploy or build Fedora Server.
 
 ## Variable Usage
 This is a description of each variable, what it does, and a table to determine when it is needed.

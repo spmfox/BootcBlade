@@ -21,5 +21,5 @@ all:
       create_user_ssh_pub: "ssh-rsa <ssh key>"
       bootc_image_tag: "40"
       bootc_acknowledge: false
-# This is a local run only, useful for creating ISOs and perhaps running update.yml. The fedora-bootc:tag can be specified here, using an earlier version.
+# This is a local run only, useful for creating ISOs and perhaps running update.yml. The centos-bootc:tag can be specified here, using an earlier version.
 # Because this version is before the need for an acknowledgement during bootc deployment, we can override and remove that from the command.
