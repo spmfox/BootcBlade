@@ -58,10 +58,6 @@ will need to be run, either remotely or as localhost, and the required variables
 ### ```/root/bootcblade.containerfile``` is gone:
 You can use ```update.yml``` to recreate this, assuming you have the correct inventory.
 
-### Cockpit wont work
-Currently there is a known issue, ```cockpit-ws``` is having issues installing properly inside the container during the build. On a reboot, you will have to do the following commands as sudo:
-```$ bootc usr-overlay ; dnf -y reinstall cockpit-ws ; systemctl restart cockpit.socket```
-
 ### BootcBlade will no longer build
 The default tag used for ```centos-bootc``` is referenced in ```templates/bootcblade.containerfile.j2``` - its possible that there was a kernel update, or a release update, that breaks ZFS. Usually these issues are transient and resolve on their own. If you need a build now (perhaps for a fresh system) you can try and see if there is an older release (tag) from the upstream repo, and adjust it using the ```bootc_image_tag``` variable.
 
@@ -87,7 +83,7 @@ if this is defined - so this can override the default and remove that
 | create_user_password | X | - |
 | create_user_ssh_pub  | X | X |
 | create_user_shell    | X | - |
-| bootc_image_tag     | X | - |
+| bootc_image_tag      | X | - |
 | bootc_acknowledge    | X | - |
 
 ### iso.yml
@@ -97,7 +93,7 @@ if this is defined - so this can override the default and remove that
 | create_user_password | X | - |
 | create_user_ssh_pub  | X | X |
 | create_user_shell    | - | - |
-| bootc_image_tag     | X | - |
+| bootc_image_tag      | X | - |
 | bootc_acknowledge    | - | - |
 
 ### update.yml
@@ -107,6 +103,22 @@ if this is defined - so this can override the default and remove that
 | create_user_password | - | - |
 | create_user_ssh_pub  | - | - |
 | create_user_shell    | - | - |
-| bootc_image_tag     | X | - |
+| bootc_image_tag      | X | - |
 | bootc_acknowledge    | - | - |
 
+## Hacks / Workarounds
+### ZFS
+I ran into a few problems with ZFS - the ZFS on Linux packages for CentOS didn't quite work for CentOS Stream.
+Yes the older kernel was still in use and didn't change major versions however sometimes Red Hat backported changes from newer kernels.
+I considered using Fedora Server (instead of CentOS Stream) however the problem was reverse then, sometimes Fedora changes major kernel versions mid-release.
+So I settled with using CentOS Stream for the base and the Fedora ZoL release packages. I may tweak the code or the exact release being used but this seems
+to be the most stable so far.
+
+### Cockpit
+I ran into a problem where the ```cockpit-ws``` package would not install onto the base image [https://github.com/containers/bootc/issues/571](https://github.com/containers/bootc/issues/571).
+There was some advice in that thread about using the containerized version of ```cockpit-ws``` so that is what I am doing, however this is being applied after deployment via Ansible
+and not baked into the image.
+[https://quay.io/repository/cockpit/ws](https://quay.io/repository/cockpit/ws)
+
+This also explains why I'm using rpm vs dnf to install the 45Drives Cockpit packages - they have a dependency on ```cockpit-ws``` that I need to override.
+Once the official ```cockpit-files``` package is released I will be using that instead of ```cockpit-navigator```.

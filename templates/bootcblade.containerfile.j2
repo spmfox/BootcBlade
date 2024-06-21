@@ -9,14 +9,15 @@ RUN dnf -y install epel-release git && \
     sed -i s/\$releasever/38/g /etc/yum.repos.d/zfs.repo && \
     dnf -y install kernel-devel-$(ls /usr/lib/modules) && \
     dnf -y install zfs && \
+    dnf clean all && \
     dkms build zfs/$(rpm -q --qf '%{VERSION}' zfs) -k $(ls /usr/lib/modules) && \
     dkms install zfs/$(rpm -q --qf '%{VERSION}' zfs) -k $(ls /usr/lib/modules)
 
 # KVM & Cockpit
 RUN echo "qemu:x:107:107:qemu user:/:/sbin/nologin" >> /etc/passwd && \
     dnf -y install qemu-kvm libvirt virt-install virt-viewer && \
-    dnf -y install cockpit cockpit-bridge cockpit-machines cockpit-pcp cockpit-podman cockpit-storaged cockpit-system cockpit-navigator cockpit-selinux cockpit-ostree && \
-    systemctl enable cockpit.socket
+    dnf -y install cockpit-bridge cockpit-machines cockpit-pcp cockpit-podman cockpit-storaged cockpit-system cockpit-navigator cockpit-selinux cockpit-ostree && \
+    dnf clean all
 
 # Cockpit ZFS Manager
 RUN git clone https://github.com/45drives/cockpit-zfs-manager.git /root/cockpit-zfs-manager && \
@@ -31,8 +32,10 @@ RUN git clone https://github.com/45drives/cockpit-zfs-manager.git /root/cockpit-
     curl -sSL https://scripts.45drives.com/cockpit_font_fix/fonts/OpenSans-Semibold-webfont.woff -o /usr/share/cockpit/static/fonts/OpenSans-Semibold-webfont.woff
 
 # Cockpit file sharing, and Samba users
-RUN dnf -y install https://github.com/45Drives/cockpit-identities/releases/download/v0.1.12/cockpit-identities-0.1.12-1.el8.noarch.rpm \
-    https://github.com/45Drives/cockpit-file-sharing/releases/download/v3.3.7/cockpit-file-sharing-3.3.7-1.el8.noarch.rpm
+RUN dnf -y install perl samba-common-tools nfs-utils samba-winbind-clients && \
+    dnf clean all && \
+    rpm --nodeps -i https://github.com/45Drives/cockpit-identities/releases/download/v0.1.12/cockpit-identities-0.1.12-1.el8.noarch.rpm && \
+    rpm --nodeps -i https://github.com/45Drives/cockpit-file-sharing/releases/download/v3.3.7/cockpit-file-sharing-3.3.7-1.el8.noarch.rpm
 
 # Sanoid & Syncoid
 RUN git clone https://github.com/jimsalterjrs/sanoid.git /root/sanoid && \
@@ -40,10 +43,12 @@ RUN git clone https://github.com/jimsalterjrs/sanoid.git /root/sanoid && \
     mkdir /etc/sanoid && cp sanoid.defaults.conf /etc/sanoid && touch /etc/sanoid/sanoid.conf && cp sanoid.conf /etc/sanoid/sanoid.example.conf && \
     rm -r /root/sanoid
 RUN dnf -y install perl-Data-Dumper perl-Getopt-Long lzop mbuffer mhash pv && \
+    dnf clean all && \
     PERL_MM_USE_DEFAULT=1 cpan install Capture::Tiny && PERL_MM_USE_DEFAULT=1 cpan install Config::IniFiles
 
 # Firewall
 RUN dnf -y install firewalld && \
+    dnf clean all && \
     systemctl enable firewalld && \
     firewall-offline-cmd --add-service cockpit && \
     firewall-offline-cmd --add-service ssh
@@ -52,4 +57,5 @@ RUN dnf -y install firewalld && \
 RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-passwordless-sudo
 
 # Other tools
-RUN dnf -y install vim podman fish ansible wget dstat byobu smartmontools
+RUN dnf -y install vim podman fish ansible wget dstat byobu smartmontools && \
+    dnf clean all

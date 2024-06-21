@@ -102,6 +102,15 @@
           loop:
             - "bootc-fetch-apply-updates.timer"
             - "bootc-fetch-apply-updates.service"
+
+        - name: Enable install container-based cockpit-ws
+          ansible.builtin.shell: "podman container runlabel INSTALL quay.io/cockpit/ws systemctl enable cockpit.service"
+
+        - name: Start container-based Cockpit
+          ansible.builtin.systemd:
+            name: "cockpit.service"
+            state: "started"
+            enabled: true
       vars:
         ansible_user: "root"
       tags: configure
