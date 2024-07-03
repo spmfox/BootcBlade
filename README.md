@@ -120,5 +120,10 @@ There was some advice in that thread about using the containerized version of ``
 and not baked into the image.
 [https://quay.io/repository/cockpit/ws](https://quay.io/repository/cockpit/ws)
 
+Using this containerized version of ```cockpit-ws``` also brought problems, using the privileged container caused mount points to be held inside the container.
+This meant once the container started, ZFS datasets could not be deleted since they were still "mounted" inside the container. To workaround this bastion mode
+is being used instead. That means to login to Cockpit you have to use the host ```host.containers.internal```. SSL certificates can still be added to the
+```/etc/cockpit/ws-certs.d``` directory - it is mounted into the container.
+
 This also explains why I'm using rpm vs dnf to install the 45Drives Cockpit packages - they have a dependency on ```cockpit-ws``` that I need to override.
 Once the official ```cockpit-files``` package is released I will be using that instead of ```cockpit-navigator```.

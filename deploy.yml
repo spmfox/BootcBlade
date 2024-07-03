@@ -103,14 +103,25 @@
             - "bootc-fetch-apply-updates.timer"
             - "bootc-fetch-apply-updates.service"
 
-        - name: Install container-based cockpit-ws
-          ansible.builtin.shell: "podman container runlabel INSTALL quay.io/cockpit/ws systemctl enable cockpit.service"
+        - name: Generate quadlet file for cockpit-bastion
+          ansible.builtin.shell: "podman run --rm -it ghcr.io/containers/podlet -i podman run --rm -d --name cockpit-bastion -p 9090:9090 -v /etc/cockpit/ws-certs.d/:/etc/cockpit/ws-certs.d/:rw,Z quay.io/cockpit/ws"
+          register: cockpit_bastion_quadlet
 
-        - name: Enable and start container-based Cockpit
-          ansible.builtin.systemd:
-            name: "cockpit.service"
+        - name: Install quadlet file for cockpit-bastion
+          ansible.builtin.copy:
+            content: "{{ cockpit_bastion_quadlet.stdout }}"
+            dest: "/etc/containers/systemd/cockpit-bastion.container"
+
+        - name: Create SSL certificate directory for cockpit-ws
+          ansible.builtin.file:
+            path: "/etc/cockpit/ws-certs.d"
+            state: directory
+
+        - name: Start cockpit-bastion service
+          ansible.builtin.systemd_service:
+            name: "cockpit-bastion.service"
             state: "started"
-            enabled: true
+            daemon-reload: true
       vars:
         ansible_user: "root"
       tags: configure
