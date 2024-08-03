@@ -16,7 +16,7 @@ RUN dnf -y install epel-release git && \
 # KVM & Cockpit
 RUN echo "qemu:x:107:107:qemu user:/:/sbin/nologin" >> /etc/passwd && \
     dnf -y install qemu-kvm libvirt virt-install virt-viewer && \
-    dnf -y install cockpit-bridge cockpit-machines cockpit-pcp cockpit-podman cockpit-storaged cockpit-system cockpit-navigator cockpit-selinux cockpit-ostree && \
+    dnf -y install cockpit-bridge cockpit-machines cockpit-pcp cockpit-podman cockpit-storaged cockpit-system cockpit-files cockpit-selinux cockpit-ostree && \
     systemctl enable libvirt-guests && \
     dnf clean all
 
