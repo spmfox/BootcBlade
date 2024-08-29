@@ -57,6 +57,10 @@ RUN dnf -y install firewalld && \
 # Allow sudo without password
 RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-passwordless-sudo
 
+# bottom
+RUN dnf -y install `curl -s https://api.github.com/repos/ClementTsang/bottom/releases/latest | grep "browser_download" |grep -v musl |grep ".rpm" |awk -F '"' '{print $4}'` && \
+    dnf clean all
+
 # Other tools
-RUN dnf -y install vim podman fish ansible wget dstat byobu smartmontools && \
+RUN dnf -y install vim podman fish ansible wget dstat byobu smartmontools hdparm && \
     dnf clean all
