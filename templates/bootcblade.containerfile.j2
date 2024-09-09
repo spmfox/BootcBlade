@@ -64,3 +64,6 @@ RUN dnf -y install `curl -s https://api.github.com/repos/ClementTsang/bottom/rel
 # Other tools
 RUN dnf -y install vim podman fish ansible wget dstat byobu smartmontools hdparm && \
     dnf clean all
+
+# Fix for man
+RUN ln -s /usr/bin/man.man-db /usr/bin/man
