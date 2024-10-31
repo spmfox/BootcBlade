@@ -62,7 +62,7 @@ RUN dnf -y install `curl -s https://api.github.com/repos/ClementTsang/bottom/rel
     dnf clean all
 
 # Other tools
-RUN dnf -y install vim podman fish ansible wget dstat byobu smartmontools hdparm wireguard-tools NetworkManager-wifi && \
+RUN dnf -y install vim podman fish ansible wget dstat byobu smartmontools hdparm wireguard-tools NetworkManager-wifi rsync && \
     dnf clean all
 
 # Fix for man
