@@ -8,4 +8,4 @@ podman run --rm --privileged \
         localhost/bootcblade:latest \
         install to-filesystem --skip-fetch-check --replace=alongside /target \
 	--root-ssh-authorized-keys /target/root/.ssh/authorized_keys \
-        --target-transport=containers-storage {{ '' if bootc_acknowledge is false else '--acknowledge-destructive' }}
+        --target-transport=containers-storage --acknowledge-destructive

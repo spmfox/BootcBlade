@@ -7,5 +7,5 @@ Description=BootcBlade rebuild service
 Type=oneshot
 TimeoutStartSec=30m
 ExecStart=/usr/bin/bash -c "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile --pull=always"
-ExecStartPost=/usr/bin/bash -c "bootc switch --transport containers-storage localhost/bootcblade && bootc update"
+ExecStartPost=/usr/bin/bash -c "bootc switch --transport containers-storage localhost/bootcblade:latest && bootc update"
 ExecStartPost=-sleep 10 ; podman image prune -f
