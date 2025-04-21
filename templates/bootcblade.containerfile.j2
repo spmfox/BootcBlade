@@ -1,4 +1,4 @@
-FROM quay.io/fedora/fedora-bootc:{{ bootc_image_tag if bootc_image_tag is defined else '40' }}
+FROM quay.io/fedora/fedora-bootc:{{ bootc_image_tag if bootc_image_tag is defined else '41' }}
 
 ARG SKIP_ZFS={{ skip_zfs if skip_zfs is defined else 'False' }}
 ARG SKIP_KVM={{ skip_kvm if skip_kvm is defined else 'False' }}
@@ -28,7 +28,7 @@ RUN dnf -y install firewalld && \
 
 # ZFS
 RUN if [ "$SKIP_ZFS" = "False" ]; then \
-      dnf -y install https://zfsonlinux.org/fedora/zfs-release-2-5.fc40.noarch.rpm && \
+      dnf -y install https://zfsonlinux.org/fedora/zfs-release-2-6.fc41.noarch.rpm && \
       dnf -y install kernel-devel-$(ls /usr/lib/modules) && \
       dnf -y install zfs && \
       dkms build zfs/$(rpm -q --qf '%{VERSION}' zfs) -k $(ls /usr/lib/modules) && \
