@@ -8,7 +8,7 @@ ARG SKIP_SHARES={{ skip_shares if skip_shares is defined else 'False' }}
 RUN mkdir /var/roothome
 
 # Basic Tools
-RUN dnf -y install git vim podman fish ansible wget dstat byobu smartmontools hdparm wireguard-tools NetworkManager-wifi rsync && \
+RUN dnf -y install git vim podman fish ansible wget dstat byobu smartmontools hdparm wireguard-tools NetworkManager-wifi rsync glances tree && \
     dnf -y install `curl -s https://api.github.com/repos/ClementTsang/bottom/releases/latest | grep "browser_download" |grep -v musl |grep ".rpm" |awk -F '"' '{print $4}'` && \
     dnf -y install cockpit-bridge cockpit-podman cockpit-storaged cockpit-system cockpit-selinux cockpit-ostree cockpit-networkmanager && \
     dnf clean all
