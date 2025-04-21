@@ -16,9 +16,6 @@ RUN dnf -y install git vim podman fish ansible wget dstat byobu smartmontools hd
 # Allow sudo without password
 RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-passwordless-sudo
 
-# Fix for man pages
-RUN ln -s /usr/bin/man.man-db /usr/bin/man
-
 # Firewall
 RUN dnf -y install firewalld && \
     systemctl enable firewalld && \
