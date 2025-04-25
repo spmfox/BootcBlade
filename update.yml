@@ -12,4 +12,4 @@
       ansible.builtin.shell: "podman build -t localhost/bootcblade -f /root/bootcblade.containerfile --no-cache --pull=always"
 
     - name: Run bootc-update to apply newly built image
-      ansible.builtin.shell: "bootc update"
+      ansible.builtin.shell: "bootc switch --transport containers-storage localhost/bootcblade:latest && bootc update"
