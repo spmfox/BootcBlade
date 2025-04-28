@@ -4,24 +4,26 @@ ARG SKIP_ZFS={{ skip_zfs if skip_zfs is defined else 'False' }}
 ARG SKIP_KVM={{ skip_kvm if skip_kvm is defined else 'False' }}
 ARG SKIP_SHARES={{ skip_shares if skip_shares is defined else 'False' }}
 
-# Create root homedir
-RUN mkdir /var/roothome
-
-# Basic Tools
-RUN dnf -y install git vim podman fish ansible wget dstat byobu smartmontools hdparm wireguard-tools NetworkManager-wifi rsync glances tree && \
+# Basic Configuration
+RUN mkdir /var/roothome && \
+# System tools
+    dnf -y install firewalld git vim podman fish ansible wget dstat byobu smartmontools hdparm wireguard-tools NetworkManager-wifi rsync glances tree && \
+# btm
     dnf -y install `curl -s https://api.github.com/repos/ClementTsang/bottom/releases/latest | grep "browser_download" |grep -v musl |grep ".rpm" |awk -F '"' '{print $4}'` && \
-    dnf -y install cockpit-bridge cockpit-podman cockpit-storaged cockpit-system cockpit-selinux cockpit-ostree cockpit-networkmanager && \
-    dnf clean all
-
-# Allow sudo without password
-RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-passwordless-sudo
-
-# Firewall
-RUN dnf -y install firewalld && \
+# Cockpit
+    dnf -y install cockpit-ws cockpit-bridge cockpit-podman cockpit-storaged cockpit-system cockpit-selinux cockpit-ostree cockpit-networkmanager cockpit-files && \
+    dnf clean all && \
+# Enable services
     systemctl enable firewalld && \
+    systemctl enable cockpit.socket && \
+# Disable and mask baked-in bootc services
+    systemctl disable bootc-fetch-apply-updates.timer && \
+    systemctl mask bootc-fetch-apply-updates.service && \
+# Allow passwordless sudo
+    echo "%wheel ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/wheel-passwordless-sudo && \
+# Configure firewall for cockpit and ssh access
     firewall-offline-cmd --add-service cockpit && \
-    firewall-offline-cmd --add-service ssh && \
-    dnf clean all
+    firewall-offline-cmd --add-service ssh
 
 # ZFS
 RUN if [ "$SKIP_ZFS" = "False" ]; then \
