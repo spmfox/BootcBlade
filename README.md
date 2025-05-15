@@ -115,17 +115,6 @@ This is a description of each variable, what it does, and a table to determine w
 | skip_shares          | X    | - |
 
 
-## Hacks / Workarounds
-### Cockpit
-I ran into a problem where the `cockpit-ws` package would not install onto the base image [https://github.com/containers/bootc/issues/571](https://github.com/containers/bootc/issues/571).
-There was some advice in that thread about using the containerized version of `cockpit-ws` so that is what I am doing, however this is being applied after deployment via Ansible
-and not baked into the image.
-[https://quay.io/repository/cockpit/ws](https://quay.io/repository/cockpit/ws)
-
-Using this containerized version of `cockpit-ws` also brought problems, using the privileged container caused mount points to be held inside the container.
-This meant once the container started, ZFS datasets could not be deleted since they were still "mounted" inside the container. To workaround this bastion mode
-is being used instead. That means to login to Cockpit you have to use the host `host.containers.internal`. SSL certificates can still be added to the
-`/etc/cockpit/ws-certs.d` directory - it is mounted into the container.
-
-This also explains why I'm using rpm vs dnf to install the 45Drives Cockpit packages - they have a dependency on `cockpit-ws` that I need to override.
-Once the official `cockpit-files` package is released I will be using that instead of `cockpit-navigator`.
+## Known Issues
+Due to the nature of UID/GID drift in rpm-ostree and bootc (![uid-gid drift](https://lwn.net/Articles/1018082/)), some considerations should be noted for long running systems.
+Adding packages to your image that create service accounts and updating your deployment to this new image may cause issues.
