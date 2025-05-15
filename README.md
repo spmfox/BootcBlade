@@ -116,5 +116,5 @@ This is a description of each variable, what it does, and a table to determine w
 
 
 ## Known Issues
-Due to the nature of UID/GID drift in rpm-ostree and bootc (![uid-gid drift](https://lwn.net/Articles/1018082/)), some considerations should be noted for long running systems.
+Due to the nature of UID/GID drift in rpm-ostree and bootc ([https://lwn.net/Articles/1018082/](https://lwn.net/Articles/1018082/)), some considerations should be noted for long running systems.
 Adding packages to your image that create service accounts and updating your deployment to this new image may cause issues.
