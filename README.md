@@ -8,7 +8,7 @@ This Ansible automation uses bootc to create "the perfect" KVM hypervisor with Z
 
 ## How It Works
 BootcBlade is split into two Ansible roles:
-- ['bootc'](roles/bootc)
+- [`bootc`](roles/bootc)
   - test
-- ['host-configure`](roles/host-configure)
+- [`host-configure`](roles/host-configure)
   - test
