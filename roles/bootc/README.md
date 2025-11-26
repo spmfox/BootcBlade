@@ -1,4 +1,4 @@
-# 'bootc' Role
+# `bootc` Role
 This role is used to deploy, update, and create ISOs for the immutable OS.
 
 ## Usage - deploy on top of existing system
