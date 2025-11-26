@@ -1,4 +1,5 @@
-# bootc Role
+# 'bootc' Role
+This role is used to deploy, update, and create ISOs for the immutable OS.
 
 ## Usage - deploy on top of existing system
 1. Install a fresh Fedora Server to the desired host - use the latest minimal install to save disk space on the resulting deployed machine
