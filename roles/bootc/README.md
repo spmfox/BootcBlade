@@ -1,10 +1,4 @@
-# BootcBlade
-
-Ansible automation for deploying a KVM hypervisor using bootc and Fedora Server.
-
-![BootcBlade](docs/images/logo.png)
-
-This Ansible automation uses bootc to create "the perfect" KVM hypervisor with ZFS, NFS + Samba, Cockpit, and Sanoid + Syncoid.
+# bootc Role
 
 ## Usage - deploy on top of existing system
 1. Install a fresh Fedora Server to the desired host - use the latest minimal install to save disk space on the resulting deployed machine
