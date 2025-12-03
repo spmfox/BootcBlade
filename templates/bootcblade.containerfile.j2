@@ -32,6 +32,7 @@ RUN if [ "$SKIP_ZFS" = "False" ]; then \
       dnf -y install zfs && \
       dkms build zfs/$(rpm -q --qf '%{VERSION}' zfs) -k $(ls /usr/lib/modules) && \
       dkms install zfs/$(rpm -q --qf '%{VERSION}' zfs) -k $(ls /usr/lib/modules) && \
+      systemctl disable dkms.service && \
 # cockpit-zfs-manager
       git clone https://github.com/45drives/cockpit-zfs-manager.git /root/cockpit-zfs-manager && \
       cp -r /root/cockpit-zfs-manager/zfs /usr/share/cockpit && \
@@ -65,6 +66,6 @@ RUN if [ "$SKIP_KVM" = "False" ]; then \
 RUN if [ "$SKIP_SHARES" = "False" ]; then \
       dnf -y install perl samba samba-client samba-common-tools nfs-utils samba-winbind-clients && \
       rpm --nodeps -i https://github.com/45Drives/cockpit-identities/releases/download/v0.1.12/cockpit-identities-0.1.12-1.el8.noarch.rpm && \
-      rpm --nodeps -i https://github.com/45Drives/cockpit-file-sharing/releases/download/v3.3.7/cockpit-file-sharing-3.3.7-1.el8.noarch.rpm && \
+      rpm --nodeps -i https://github.com/45Drives/cockpit-file-sharing/releases/download/v4.3.1-2/cockpit-file-sharing-4.3.1-2.el9.noarch.rpm && \
       dnf clean all; \
     fi

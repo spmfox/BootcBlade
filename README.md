@@ -59,11 +59,6 @@ will need to be run, either remotely or as localhost, and the required variables
 ### `/root/bootcblade.containerfile` is gone:
 You can use `update.yml` to recreate this, assuming you have the correct inventory.
 
-### BootcBlade will no longer build
-The default tag used for `centos-bootc` is referenced in `templates/bootcblade.containerfile.j2` - its possible that there was a kernel update, or a release update, that breaks ZFS. Usually these issues are transient and resolve on their own. If you need a build now (perhaps for a fresh system) you can try and see if there is an older release (tag) from the upstream repo, and adjust it using the `bootc_image_tag` variable.
-
-[https://quay.io/repository/centos-bootc/centos-bootc?tab=tags&tag=latest](https://quay.io/repository/centos-bootc/centos-bootc?tab=tags&tag=latest)
-
 ## Variable Usage
 This is a description of each variable, what it does, and a table to determine when it is needed.
 
@@ -79,40 +74,40 @@ This is a description of each variable, what it does, and a table to determine w
 - `ansible_connection` - This is an Ansible variable, useful when running Ansible locally with `iso.yml` and `update.yml`
 
 ### deploy.yml
-| Variable             | Used | Required |
-| --------             | ---- | -------- |
-| create_user          | X    | - |
-| create_user_password | X    | - |
-| create_user_ssh_pub  | X    | X |
-| create_user_shell    | X    | - |
-| bootc_image_tag      | X    | - |
-| skip_zfs             | X    | - |
-| skip_kvm             | X    | - |
-| skip_shares          | X    | - |
+| Variable               | Used | Required |
+| --------               | ---- | -------- |
+| `create_user`          | X    | -        |
+| `create_user_password` | X    | -        |
+| `create_user_ssh_pub`  | X    | X        |
+| `create_user_shell`    | X    | -        |
+| `bootc_image_tag`      | X    | -        |
+| `skip_zfs`             | X    | -        |
+| `skip_kvm`             | X    | -        |
+| `skip_shares`          | X    | -        |
 
 ### iso.yml
-| Variable             | Used | Required |
-| --------             | ---- | -------- |
-| create_user          | X    | X |
-| create_user_password | X    | - |
-| create_user_ssh_pub  | X    | X |
-| create_user_shell    | -    | - |
-| bootc_image_tag      | X    | - |
-| skip_zfs             | X    | - |
-| skip_kvm             | X    | - |
-| skip_shares          | X    | - |
+| Variable               | Used | Required |
+| --------               | ---- | -------- |
+| `create_user`          | X    | X        |
+| `create_user_password` | X    | -        |
+| `create_user_ssh_pub`  | X    | X        |
+| `create_user_shell`    | -    | -        |
+| `bootc_image_tag`      | X    | -        |
+| `skip_zfs`             | X    | -        |
+| `skip_kvm`             | X    | -        |
+| `skip_shares`          | X    | -        |
 
 ### update.yml
-| Variable             | Used | Required |
-| --------             | ---- | -------- |
-| create_user          | -    | - |
-| create_user_password | -    | - |
-| create_user_ssh_pub  | -    | - |
-| create_user_shell    | -    | - |
-| bootc_image_tag      | X    | - |
-| skip_zfs             | X    | - |
-| skip_kvm             | X    | - |
-| skip_shares          | X    | - |
+| Variable               | Used | Required |
+| --------               | ---- | -------- |
+| `create_user`          | -    | -        |
+| `create_user_password` | -    | -        |
+| `create_user_ssh_pub`  | -    | -        |
+| `create_user_shell`    | -    | -        |
+| `bootc_image_tag`      | X    | -        |
+| `skip_zfs`             | X    | -        |
+| `skip_kvm`             | X    | -        |
+| `skip_shares`          | X    | -        |
 
 
 ## Known Issues
