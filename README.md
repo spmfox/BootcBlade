@@ -6,110 +6,61 @@ Ansible automation for deploying a KVM hypervisor using bootc and Fedora Server.
 
 This Ansible automation uses bootc to create "the perfect" KVM hypervisor with ZFS, NFS + Samba, Cockpit, and Sanoid + Syncoid.
 
-## Usage - deploy on top of existing system
-1. Install a fresh Fedora Server to the desired host - use the latest minimal install to save disk space on the resulting deployed machine
-2. Install `podman` on the host
-3. Generate an SSH key
-4. Create inventory using the example in the `docs` folder
-5. Make sure you have passwordless sudo or root access to desired host using your new SSH key
-6. Install needed Ansible collections `ansible-galaxy install -r collections/requirements.yml`
-7. Run `ansible-playbook deploy.yml -i inventories/<your_inventory.yml>`
+## Requirements
+- Podman
+- Ansible
+- Create a simple Ansible inventory
 
-## Usage - create ISO for automatic installation
-1. You will need an existing machine with Podman and Ansible
-2. The Ansible can be run locally or remotely - just be sure to have root or passwordless sudo working
-3. Create inventory for a local or remote run using the example in the `docs` folder
-4. Run `ansible-playbook iso.yml -i inventories/<your_inventory.yml>`
-5. ISO will be created on the local or remote machine, `/root/bootcblade-output/bootiso/install.iso`
+## How it works
+This project uses bootc. The tested way to deploy BootcBlade is by deploying on-top (replacing) an existing host.
 
+The general usage looks like this: build BootcBlade image -> deploy image onto existing system -> reboot into new system -> keeping new system updated.
 
-## Credentials
-### Deploy
-- The SSH key (for the user) is added for the root user and baked into the image generation - **the resulting BootcBlade image will include your SSH key**
-- The user, ssh key, and password (if defined) are configured after deployment via Ansible
+Ansible will create a containerfile from a template that will have all the necessary information to build the image. During the image build, this containerfile is also copied into the build so the newly deployed system will also have the containerfile and it can keep itself updated.
 
-### ISO
-- The user, SSH key, and password (if defined) are baked into the ISO - **the resulting ISO will include your user, SSH key, and hashed password (if defined)**
+ZFS kernel builds are important, so for stability BootcBlade targets the previous release of Fedora. Example: if 43 is the current version, BootcBlade targets 42.
+**This logic is only applied when Ansible templates `bootcblade.containerfile`.** This means whatever version of Fedora that was installed will stay static until either manually changing the containerfile or running Ansible to update it.
 
+## Usage
+### Build Image
+1. Create your inventory, use the sample provided in the `docs` folder as a reference
+  - If you provide a ssh key or user credentials, these will be included in the image (this is preferred)
+  - If you do not provide a key or user credentials, the only way to login to your deployed system will be ssh keys injected during the deployment
+2. Start from a new or existing system that will get erased, perferrably Fedora Server
+3. Run `ansible-playbook -i <your_inventory.yml> bootcblade.yml`
 
-## How It Works
-### Deploy
-1. A new or existing system must exist. This system should be as small as possible because its filesystem will persist in the resulting deployed machine
-2. `bootcblade.containerfile` is copied to the existing system, then `podman build` is used to build the image
-3. Once the image is built, the BootcBlade image is deployed to the system - then it is rebooted
-4. Ansible creates the user with (or without) the password and adds the SSH key
+### Deploy Image
+1. On the system where BootcBlade was built, install the `system-reinstall-bootc` package
+2. Run `sudo system-reinstall-bootc localhost/bootcblade` and follow the interative prompt
+  - This method will allow you to inject a ssh public key into the installed system - which is optional
 
-### ISO
-1. An existing system must exist to build the ISO on, no changes to this system are made
-2. Running the Ansible will create the files necessary to generate the ISO - including the user with (or without) password and the SSH key
-3. Resulting ISO is stored in the /root directory
-4. Configuration files and all used container images are deleted
-5. **ISO installer wipes all attached disks - use with caution**
+### Update new system
+During the build process the containerfile was copied into the image, along with a service to automatically update the system:
+- `/root/bootcblade.containerfile`
+- `bootcblade-rebuild.service`
+- `bootcblade-rebuild.timer`
 
-## Updating
-Updates happen in two ways. When `deploy.yml` is used, there is a systemd unit created (`bootcblade-rebuild.service`) that is created and will run once a week.
-This service depends on `/root/bootcblade.containerfile` to exist, as the container is rebuilt. If the build is successful, then the new container is staged.
-The default update service `bootc-fetch-apply-updates.service` is masked as well so it will not run.
+This process is automatic **unless the Fedora version itself needs to change** (see below for updating the containerfile). Every week a new image will be built and updated. Updates will be effective after a manual reboot.
 
-If `deploy.yml` is not used (perhaps the system was installed using an ISO created by `iso.yml`), then there is no automated update process
-and the default `bootc-fetch-apply-updates.service` is still enabled. If you want the automatic update method, then `ansible-playbook deploy.yml --tags configure-bootcblade`
-will need to be run, either remotely or as localhost, and the required variables will need to be defined.
+### Manually create or update `bootcblade.containerfile`
+`ansible-playbook -i <your_inventory.yml> bootcblade.yml --tags file`
 
-## Troubleshooting
-### `/root/bootcblade.containerfile` is gone:
-You can use `update.yml` to recreate this, assuming you have the correct inventory.
+### Manually build only
+`ansible-playbook -i <your_inventory.yml> bootcblade.yml --tags build`
+
+### Manually build & update
+`ansible-playbook -i <your_inventory.yml> bootcblade.yml --tags update`
+
 
 ## Variable Usage
-This is a description of each variable, what it does, and a table to determine when it is needed.
+All of these variables are optional
 
-- `create_user`: This user will be created during `deploy.yml` and `iso.yml`
-- `create_user_password`: This password will be used for the created user
-- `create_user_ssh_pub`: This is a SSH pubkey that will be added to the created user during `deploy.yml` and `iso.yml`, also it is applied to the root user in `deploy.yml`
-- `create_user_shell`: This shell setting will be used for the created user only during `deploy.yml`
-- `bootc_image_tag`: Override the source image tag for `deploy.yml`, `iso.yml`, and `update.yml`
-- `skip_zfs`: Default is false, if true ZFS and all supporting packages will not be part of the container build
-- `skip_kvm`: Default is false, if true KVM and all supporting packages will not be part of the container build
-- `skip_shares`: Default is false, if true NFS & Smba plus all supporting packages will not be part of the container build
-- `ansible_user` - This is an Ansible variable, useful for connecting to the initial machine with a different user during `deploy.yml`
-- `ansible_connection` - This is an Ansible variable, useful when running Ansible locally with `iso.yml` and `update.yml`
-
-### deploy.yml
-| Variable               | Used | Required |
-| --------               | ---- | -------- |
-| `create_user`          | X    | -        |
-| `create_user_password` | X    | -        |
-| `create_user_ssh_pub`  | X    | X        |
-| `create_user_shell`    | X    | -        |
-| `bootc_image_tag`      | X    | -        |
-| `skip_zfs`             | X    | -        |
-| `skip_kvm`             | X    | -        |
-| `skip_shares`          | X    | -        |
-
-### iso.yml
-| Variable               | Used | Required |
-| --------               | ---- | -------- |
-| `create_user`          | X    | X        |
-| `create_user_password` | X    | -        |
-| `create_user_ssh_pub`  | X    | X        |
-| `create_user_shell`    | -    | -        |
-| `bootc_image_tag`      | X    | -        |
-| `skip_zfs`             | X    | -        |
-| `skip_kvm`             | X    | -        |
-| `skip_shares`          | X    | -        |
-
-### update.yml
-| Variable               | Used | Required |
-| --------               | ---- | -------- |
-| `create_user`          | -    | -        |
-| `create_user_password` | -    | -        |
-| `create_user_ssh_pub`  | -    | -        |
-| `create_user_shell`    | -    | -        |
-| `bootc_image_tag`      | X    | -        |
-| `skip_zfs`             | X    | -        |
-| `skip_kvm`             | X    | -        |
-| `skip_shares`          | X    | -        |
-
-
-## Known Issues
-Due to the nature of UID/GID drift in rpm-ostree and bootc ([https://lwn.net/Articles/1018082/](https://lwn.net/Articles/1018082/)), some considerations should be noted for long running systems.
-Adding packages to your image that create service accounts and updating your deployment to this new image may cause issues.
+- `create_user`: Add user to containerfile, will be created during build
+- `create_user_password`: Encrypted password for the created user (generated by `openssl passwd -6`)
+- `create_user_ssh_pub`: SSH public key for the created user and the root user
+- `create_user_shell`: Shell for the created user
+- `bootc_image_tag`: Override the tag for the `quay.io/fedora/fedora-bootc` image
+- `skip_zfs`: Setting this `true` will skip ZFS during the image build
+- `skip_kvm`: Setting this to `true` will skip KVM during the image build
+- `skip_shares`: Setting this to `true` will skip NFS & SMB during the build
+- `additional_build`: Inject your own build steps for the containerfile

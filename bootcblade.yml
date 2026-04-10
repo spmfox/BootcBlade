@@ -1,0 +1,52 @@
+- hosts: all
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Block for bootcblade.containerfile
+      block:
+        - name: Make sure podman is installed
+          ansible.builtin.package:
+            name: "podman"
+            state: present
+
+        - name: Get current Fedora version
+          ansible.builtin.uri:
+            url: https://getfedora.org/releases.json
+            return_content: yes
+          register: fedora_api
+          when: bootc_image_tag is not defined
+
+        - name: Calculate the previous Fedora version
+          ansible.builtin.set_fact:
+            bootc_image_tag: "{{ (fedora_api.json | map(attribute='version') | map('int') | max) - 1 }}"
+          when: bootc_image_tag is not defined
+
+        - name: Create /root/bootcblade.containerfile
+          ansible.builtin.template:
+            src: "bootcblade.containerfile.j2"
+            dest: "/root/bootcblade.containerfile"
+      tags:
+        - file
+        - update
+
+
+    - name: Block for image build
+      block:
+        - name: Build localhost/bootcblade:latest from /root/bootcblade.containerfile
+          ansible.builtin.shell: "podman build -t localhost/bootcblade:latest -f /root/bootcblade.containerfile"
+
+        - name: Prune podman images
+          ansible.builtin.shell: "podman image prune -f"
+      tags: 
+        - build
+        - update
+
+
+    - name: Block for update
+      block:
+        - name: Run bootc update to apply newly built image
+          ansible.builtin.shell: "bootc switch --transport containers-storage localhost/bootcblade:latest && bootc update"
+      tags:
+        - never
+        - update
