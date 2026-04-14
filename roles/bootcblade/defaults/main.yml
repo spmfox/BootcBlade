@@ -1,0 +1,3 @@
+build_zfs: true
+build_kvm: true
+build_shares: true

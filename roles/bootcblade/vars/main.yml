@@ -1,0 +1,21 @@
+#build_zfs: false
+#build_kvm: true
+#build_shares: false
+
+#create_user:
+#  - name: "user1"
+#    password: "$6$bWkG42cxtcaKxhU2$EGqu206paXYgtM4DtsLAZt.n2/itWrw.iLRrTkEFsZxNbmN6VcZZRIKuTyZvpCTIzn4S6n4arT3ueL8hKAASi/"
+
+#  - name: "user2"
+#    ssh_pub_key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFvcpADyVlinBUlfwheJA++nukNHyEzovEAfTYvzTX26"
+#    shell: "/usr/bin/zsh"
+
+#root_ssh_pub_keys:
+#  - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFvcpADyVlinBUlfwheJA++nukNHyEzovEAfTYvzTX26"
+#  - "key2"
+
+#bootc_image_tag: "40"
+
+#additional_build_commands: |
+#  RUN dnf -y install zsh
+#  RUN dnf -y install asciiquarium

@@ -5,19 +5,25 @@ all:
 # This is the bare minimum required - no users or credentials will built into the image.
 
     remote-machine2:
-      create_user: "user"
-      create_user_password: "$6$bWkG42cxtcaKxhU2$EGqu206paXYgtM4DtsLAZt.n2/itWrw.iLRrTkEFsZxNbmN6VcZZRIKuTyZvpCTIzn4S6n4arT3ueL8hKAASi/"
-      # This must be encrypted, use the "openssl passwd -6" command to generate
-      create_user_ssh_pub: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFvcpADyVlinBUlfwheJA++nukNHyEzovEAfTYvzTX26"
+      create_user: 
+        - name: "user"
+          password: "$6$bWkG42cxtcaKxhU2$EGqu206paXYgtM4DtsLAZt.n2/itWrw.iLRrTkEFsZxNbmN6VcZZRIKuTyZvpCTIzn4S6n4arT3ueL8hKAASi/"
+# This must be encrypted, use the "openssl passwd -6" command to generate
+          ssh_pub_keys:
+            - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFvcpADyVlinBUlfwheJA++nukNHyEzovEAfTYvzTX26"
       bootc_image_tag: "40"
 # This will create a user with a password and SSH key - the credentials will be built into the image. Uses Fedora 40 as the base image.
 # SSH key will also be used for the root user.
 
     localhost:
       ansible_connection: local
-      create_user: "user"
-      create_user_ssh_pub: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFvcpADyVlinBUlfwheJA++nukNHyEzovEAfTYvzTX26"
-      create_user_shell: "/usr/bin/zsh"
-      additional_build: |
+      create_user: 
+        - name: "user"
+          ssh_pub_keys:
+            - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFvcpADyVlinBUlfwheJA++nukNHyEzovEAfTYvzTX26"
+          shell: "/usr/bin/zsh"
+      root_ssh_pub_keys:
+        - "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFvcpADyVlinBUlfwheJA++nukNHyEzovEAfTYvzTX26"
+      additional_build_commands: |
         RUN dnf -y install zsh
 # This runs against localhost, create the user and SSH key, adds a line to the containerfile for install zsh, and sets the user shell to zsh.
