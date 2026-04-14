@@ -1,10 +1,5 @@
 - name: Block for bootcblade.containerfile
   block:
-    - name: Make sure podman is installed
-      ansible.builtin.package:
-        name: "podman"
-        state: present
-
     - name: Get current Fedora version
       ansible.builtin.uri:
         url: https://getfedora.org/releases.json
@@ -23,6 +18,20 @@
         dest: "/root/bootcblade.containerfile"
   tags:
     - file
+    - update
+
+- name: Block for podman
+  block:
+    - name: Check if podman is available
+      ansible.builtin.command: "which podman"
+
+  rescue:
+    - name: Try to install podman
+      ansible.builtin.package:
+        name: "podman"
+        state: present
+  tags:
+    - build
     - update
 
 
